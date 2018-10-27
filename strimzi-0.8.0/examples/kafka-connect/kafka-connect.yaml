@@ -1,0 +1,9 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaConnect
+metadata:
+  name: my-connect-cluster
+spec:
+  replicas: 1
+  image: thbeh/kafka-connect:0.8.0
+  imagePullPolicy: Always
+  bootstrapServers: my-cluster-kafka-bootstrap:9092

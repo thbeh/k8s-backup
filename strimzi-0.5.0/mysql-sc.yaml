@@ -1,0 +1,7 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: mysql-gluster 
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://10.244.4.6:8080"

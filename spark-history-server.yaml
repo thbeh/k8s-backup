@@ -1,0 +1,50 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: spark-history-server-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: spark-history-server
+  template:
+    metadata:
+      labels:
+        component: spark-history-server
+    spec:
+      containers:
+        - name: spark-history-server
+          image: snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: historyport
+              containerPort: 18080
+              protocol: TCP
+          env: 
+          - name: SPARK_HISTORY_OPTS
+            value: "-Dspark.hadoop.fs.s3a.endpoint=http://192.168.205.201:9000 -Dspark.hadoop.fs.s3a.access.key=minio -Dspark.hadoop.fs.s3a.secret.key=minio123 -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem -Dspark.hadoop.fs.s3a.path.style.access=true -Dspark.history.fs.logDirectory=s3a://thbeh/"
+          command: ["/opt/spark/bin/spark-class","org.apache.spark.deploy.history.HistoryServer"] 
+          resources:
+            requests:
+              cpu: "1"
+              memory: "1024Mi"
+          volumeMounts:
+          - name: data
+            mountPath: "/mnt"
+            readOnly: true
+      volumes:
+      - name: data
+        emptyDir: {}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: spark-history-server
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 18080
+      targetPort: historyport
+      name: historyport
+  selector:
+    component: spark-history-server

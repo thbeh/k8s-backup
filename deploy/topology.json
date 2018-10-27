@@ -1,0 +1,80 @@
+{
+  "clusters": [
+    {
+      "nodes": [
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "k8s-n1"
+              ],
+              "storage": [
+                "172.16.35.11"
+              ]
+            },
+            "zone": 1
+          },
+          "devices": [
+            "/dev/sdb",
+            "/dev/sdc",
+            "/dev/sdd"
+          ]
+        },
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "k8s-n2"
+              ],
+              "storage": [
+                "172.16.35.12"
+              ]
+            },
+            "zone": 1
+          },
+          "devices": [
+            "/dev/sdb",
+            "/dev/sdc",
+            "/dev/sdd"
+          ]
+        },
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "k8s-n3"
+              ],
+              "storage": [
+                "172.16.35.13"
+              ]
+            },
+            "zone": 1
+          },
+          "devices": [
+            "/dev/sdb",
+            "/dev/sdc",
+            "/dev/sdd"
+          ]
+        },
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "k8s-n4"
+              ],
+              "storage": [
+                "172.16.35.14"
+              ]
+            },
+            "zone": 1
+          },
+          "devices": [
+            "/dev/sdb",
+            "/dev/sdc",
+            "/dev/sdd"
+          ]
+        }
+      ]
+    }
+  ]
+}

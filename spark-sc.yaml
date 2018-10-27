@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: spark-gluster 
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://10.244.5.5:8080"
+  restuser: "spark"
+  restuserkey: "spark123"
