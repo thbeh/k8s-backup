@@ -1,0 +1,126 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "zeppelin-with-spark.fullname" . }}
+  labels:
+    app: {{ template "zeppelin-with-spark.name" . }}
+    chart: {{ template "zeppelin-with-spark.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "zeppelin-with-spark.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "zeppelin-with-spark.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.zeppelinService.zeppelinPort }}
+              protocol: TCP
+            - name: web-ui
+              containerPort: {{ .Values.zeppelinService.sparkUIPort }}
+              protocol: TCP
+          command:
+            - "/bin/bash"
+            - "-c"
+            - >
+              cp /spark_conf/* /opt/spark/conf;
+              cp /zeppelin_conf/* /zeppelin/conf;
+              export MASTER=k8s://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT;
+              if [ "$usePVForNoteBooks" == "true" ]; then
+                export ZEPPELIN_NOTEBOOK_DIR="/data/$notebookDir"
+                mkdir -p "$ZEPPELIN_NOTEBOOK_DIR"
+                cp -nR /zeppelin/notebook/* "$ZEPPELIN_NOTEBOOK_DIR"
+              fi;
+              if [ "$enableHistoryEvents" == "true" ]; then
+                # currently not using PV for history events so commented out
+                #if [ "$usePVForEventsLog" == "true" ]; then
+                #  SPARK_EVENTS_DIR="/data/$eventLogDir"
+                #  mkdir -p "$SPARK_EVENTS_DIR"
+                #else
+                #  SPARK_EVENTS_DIR="$eventLogDir"
+                #fi
+                SPARK_EVENTS_DIR="$eventLogDir"
+                SPARK_EVENT_LOG_CONFIG=" --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=$SPARK_EVENTS_DIR"
+              fi;
+              {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+              SPARK_SECRETS_CONFIG=" --conf spark.kubernetes.driver.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets \
+                --conf spark.kubernetes.executor.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets"
+              {{- end }}
+              export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG $SPARK_SECRETS_CONFIG \
+               --conf spark.kubernetes.namespace={{ .Release.Namespace }}
+               --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
+               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.global.serviceAccount | default .Values.serviceAccount }} \
+               --conf spark.ui.port={{ .Values.zeppelinService.sparkUIPort }}";
+              echo "SPARK_SUBMIT_OPTIONS are: $SPARK_SUBMIT_OPTIONS";
+              rm -f /zeppelin/conf/interpreter.json;
+              echo "Starting Zeppelin server ...";
+              /zeppelin/bin/zeppelin.sh
+          envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-zpenv-configmap
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: /data/
+          - name: zeppelin-config-properties
+            mountPath: /zeppelin_conf
+          - name: spark-config-properties
+            mountPath: /spark_conf
+          {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+          - name: secrets-volume
+            mountPath: /etc/secrets
+          {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      serviceAccount: {{ .Values.global.serviceAccount | default .Values.serviceAccount }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+        - name: secrets-volume
+          secret:
+            secretName: {{ .Release.Name }}-zp-secrets
+        {{- end }}
+        - name: spark-config-properties
+          configMap:
+            name: {{ .Release.Name }}-zpspark-configmap
+        - name: zeppelin-config-properties
+          configMap:
+            name: {{ .Release.Name }}-zeppelin-configmap
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "zeppelin-with-spark.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

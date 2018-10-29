@@ -1,0 +1,26 @@
+# parent's requirements.yaml file
+dependencies:
+  - name: spark-hs
+    repository: file://../spark-hs
+    version: 0.1.0
+    alias: historyserver
+    condition: historyserver.enabled
+  - name:  zeppelin-with-spark
+    repository: file://../zeppelin-with-spark
+    version: 0.1.0
+    alias: zeppelin
+    condition: zeppelin.enabled
+  - name:  jupyter-with-spark
+    repository: file://../jupyter-with-spark
+    version: 0.1.0
+    alias: jupyter
+    condition: jupyter.enabled
+  - name:  spark-rss
+    repository: file://../spark-rss
+    version: 0.1.0
+    alias: rss
+  - name:  spark-shuffle
+    repository: file://../spark-shuffle
+    version: 0.1.0
+    alias: shuffle
+

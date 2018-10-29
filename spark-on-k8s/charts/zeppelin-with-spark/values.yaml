@@ -1,0 +1,86 @@
+# Default values for zeppelin-with-spark.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: snappydatainc
+  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1-test.1
+  pullPolicy: IfNotPresent
+
+zeppelinService:
+  type: LoadBalancer
+  zeppelinPort: 8080
+  sparkUIPort: 4040
+
+serviceAccount: default
+
+# Any environment variables that need to be made available to the container are defined here
+# This may include environment variables used by Spark, Zeppelin
+environment:
+  # Provide configuration parameters, use syntax as expected by spark-submit
+  SPARK_SUBMIT_OPTIONS: >-
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
+     --conf spark.executor.instances=2
+     --conf spark.hadoop.fs.s3a.endpoint=http://192.168.205.201:9000
+     --conf spark.hadoop.fs.s3a.access.key=minio
+     --conf spark.hadoop.fs.s3a.secret.key=minio123
+     --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+     --conf spark.hadoop.fs.s3a.path.style.access=true
+     --conf spark.eventLog.enabled=true
+     --conf spark.eventLog.dir=s3a://thbeh/
+#     --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+
+sparkEventLog:
+  enableHistoryEvents: true
+  # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+  eventLogDir: "s3a://thbeh/"
+
+# if mountSecrets is set to true files in 'conf/secrets' directory will be mounted
+# on path '/etc/secrets' as secrets
+mountSecrets: false
+
+noteBookStorage:
+  usePVForNoteBooks: true
+  # If using PV for notebook storage, 'notebookDir' will be an
+  # absolute path in the mounted persistent volume
+  notebookDir: "/notebooks"
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+  ## If 'existingClaim' is defined, PVC must be created manually before
+  ## volume will be bound
+  # existingClaim:
+
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, Azure & OpenStack)
+  ##
+  storageClass: "spark-gluster"
+  accessMode: ReadWriteOnce
+  size: 20Gi
+  # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+  keepResource: false
+
+resources: {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+#internal attribute, do not change
+global:
+  umbrellaChart: false

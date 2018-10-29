@@ -1,0 +1,87 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "spark-hs.fullname" . }}
+  labels:
+    app: {{ template "spark-hs.name" . }}
+    chart: {{ template "spark-hs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "spark-hs.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "spark-hs.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: historyport
+              containerPort: 18080
+              protocol: TCP
+          command:
+            - "/bin/sh"
+            - "-c"
+            - >
+              if [ "$enablePVC" == "true" ]; then
+                export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
+                -Dspark.history.fs.logDirectory=file:/mnt/$eventsDir";
+              else
+                export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
+                -Dspark.history.fs.logDirectory=$eventsDir";
+              fi;
+              /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer;
+          envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-hsenv-configmap
+          livenessProbe:
+            httpGet:
+              path: /
+              port: historyport
+          readinessProbe:
+            httpGet:
+              path: /
+              port: historyport
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: /mnt
+          {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+          - name: secrets-volume
+            mountPath: /etc/secrets
+          {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      serviceAccount: {{ .Values.global.serviceAccount | default .Values.serviceAccount }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+        - name: secrets-volume
+          secret:
+            secretName: history-secrets
+        {{- end }}
+        - name: data
+        {{- if .Values.historyServerConf.enablePVC }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.historyServerConf.existingClaimName }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

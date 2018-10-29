@@ -1,0 +1,9 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: strimzi-kafka 
+provisioner: kubernetes.io/glusterfs
+parameters:
+  resturl: "http://10.244.2.5:8080"
+  restuser: "kafka"
+  restuserkey: "kafka123"

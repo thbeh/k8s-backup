@@ -1,0 +1,18 @@
+dependencies:
+- name: spark-hs
+  repository: file://../spark-hs
+  version: 0.1.0
+- name: zeppelin-with-spark
+  repository: file://../zeppelin-with-spark
+  version: 0.1.0
+- name: jupyter-with-spark
+  repository: file://../jupyter-with-spark
+  version: 0.1.0
+- name: spark-rss
+  repository: file://../spark-rss
+  version: 0.1.0
+- name: spark-shuffle
+  repository: file://../spark-shuffle
+  version: 0.1.0
+digest: sha256:821eb2bc83ac2430ca9c0c259bcea7c5f7417ad58d31be672240cb04e652df62
+generated: 2018-05-11T11:47:45.512908935+05:30

@@ -1,0 +1,37 @@
+{{- if (not .Values.global.umbrellaChart) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-jupyter-configmap
+data:
+    jupyter_notebook_config.py: |-
+      {{- range .Files.Lines "conf/jupyter/jupyter_notebook_config.py" }}
+        {{ . }}{{ end }}
+{{- end }}
+---
+{{- if (not .Values.global.umbrellaChart) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-jp-spark-configmap
+data:
+    spark-defaults.conf: |-
+      {{- range .Files.Lines "conf/spark/spark-defaults.conf" }}
+        {{ . }}{{ end }}
+    fairscheduler.xml: |-
+      {{- range .Files.Lines "conf/spark/fairscheduler.xml" }}
+        {{ . }}{{ end }}
+    log4j.properties: |-
+      {{- range .Files.Lines "conf/spark/log4j.properties" }}
+        {{ . }}{{ end }}
+{{- end }}
+---
+{{- if and .Values.mountSecrets (not .Values.global.umbrellaChart) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-jp-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
+{{- end }}

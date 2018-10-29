@@ -1,0 +1,68 @@
+# Default values for jupyter-with-spark helm chart.
+# Declare variables to be passed into your templates.
+
+image:
+  repository: snappydatainc/jupyter-notebook
+  tag: 5.2.2-spark-v2.2.0-kubernetes-0.5.1
+  pullPolicy: IfNotPresent
+
+jupyterService:
+  type: LoadBalancer
+  jupyterPort: 8888
+  sparkUIPort: 4040
+  # Set your password to access the notebook server. A default ('abc123') has been set for you.
+  # Setting the password to empty string will disable the authentication (not recommended).
+  password: 'abc123'
+
+sparkWebUI:
+  type: LoadBalancer
+  port: 4040
+
+serviceAccount: default
+mountSecrets: false
+
+sparkEventLog:
+  enableHistoryEvents: false
+  # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+  eventLogDir: "gs://spark-history-server-store/"
+
+persistence:
+  enabled: false
+  # A manually managed Persistent Volume and Claim
+  # Requires persistence.enabled: true
+  # If defined, PVC must be created manually before the volume can be bound.
+  # existingClaim:
+
+  # If defined, storageClassName: <storageClass>
+  # If set to "-", storageClassName: "", which disables dynamic provisioning
+  # If undefined (the default) or set to null, no storageClassName spec is
+  #   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  #   GKE, Azure & OpenStack)
+  #
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 6Gi
+  # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+  keepResource: true
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+#internal attribute, do not change
+global:
+  umbrellaChart: false
