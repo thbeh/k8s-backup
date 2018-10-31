@@ -17,50 +17,53 @@
 - [x] helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
 - [x] helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace monitoring
 
+###### Installing Metallb
+- [x] kubectl --kubeconfig .kube/config apply -f metallb.yaml
+- [x] kubectl --kubeconfig .kube/config apply -f example-layer2-config.yaml
 
-kubectl --kubeconfig .kube/config apply -f metallb.yaml
-kubectl --kubeconfig .kube/config apply -f example-layer2-config.yaml
+###### Installing GlusterFS and Heketi
+- [x] cd deploy
+- [x] vi topology.json 
+- [x] ./gk-deploy -g  
+- [x] wget https://github.com/heketi/heketi/reldashboardeases/download/v7.0.0/heketi-client-v7.0.0.linux.amd64.tar.gz
+- [x] tar zxvf heketi-client-v7.0.0.linux.amd64.tar.gz
+- [x] cp heketi-client/bin/heketi-cli /usr/local/bin/
 
-cd deploy
-vi topology.json 
-./gk-deploy -g  
-
-wget https://github.com/heketi/heketi/reldashboardeases/download/v7.0.0/heketi-client-v7.0.0.linux.amd64.tar.gz
-tar zxvf heketi-client-v7.0.0.linux.amd64.tar.gz
-cp heketi-client/bin/heketi-cli /usr/local/bin/
-
-export HEKETI_CLI_SERVER=http://10.244.3.7:8080 <- deploy-heketi sever
+> export HEKETI_CLI_SERVER=http://10.244.3.7:8080 <- deploy-heketi sever
 > export HEKETI_CLI_SERVER=$(kubectl get svc/deploy-heketi --template 'http://{{.spec.clusterIP}}:{{(index .spec.ports 0).port}}')
-heketi-cli volume list
-heketi-cli topology info
+\(Optional) heketi-cli volume list
+\(Optional) heketi-cli topology info
 
-vi minio-storage-class.yaml (edit heketi endpoint)
-kubectl create -f minio-sc.yaml
-kubectl create -f minio-distributed-headless-service.yaml
-kubectl create -f minio-distributed-statefulset.yaml (not sure why 50G does not work)
-kubectl create -f minio-loadbalance-service.yaml (expose to etxernal IP via metallb)
+###### Installing Minio
+- [x] vi minio-storage-class.yaml (edit heketi endpoint)
+- [x] kubectl create -f minio-sc.yaml
+- [x] kubectl create -f minio-distributed-headless-service.yaml
+- [x] kubectl create -f minio-distributed-statefulset.yaml (not sure why 50G does not work)
+- [x] kubectl create -f minio-loadbalance-service.yaml (expose to etxernal IP via metallb)
 
-pip install awscli --upgrade --user (in home directory e.g. /home/thbeh)
-.local/bin/aws --version
-.local/bin/aws configure
-.local/bin/aws configure set default.s3.signature_version s3v4
-.local/bin/aws --endpoint-url http://192.168.56.201:9000 s3 ls
-.local/bin/aws --endpoint-url http://192.168.56.201:9000 s3 ls s3://thbeh
+###### Installing awscli
+- [x] pip install awscli --upgrade --user (in home directory e.g. /home/thbeh)
+- [x] .local/bin/aws --version
+- [x] .local/bin/aws configure
+- [x] .local/bin/aws configure set default.s3.signature_version s3v4
+- [x] .local/bin/aws --endpoint-url http://192.168.56.201:9000 s3 ls
+- [x] .local/bin/aws --endpoint-url http://192.168.56.201:9000 s3 ls s3://thbeh
 
-sed -i 's/namespace: .*/namespace: default/' examples/install/cluster-operator/*ClusterRoleBinding*.yaml
-kubectl create -f examples/install/cluster-operator
-vi kafka-sc.yaml (copy from minio-sc.yaml, use kafka-cluster as storage class name)
-kubectl create -f kafka-sc.yaml
+###### Installing Strimzi 0.8.0
+- [x] sed -i 's/namespace: .*/namespace: default/' examples/install/cluster-operator/*ClusterRoleBinding*.yaml
+- [x] kubectl create -f examples/install/cluster-operator
+- [x] vi kafka-sc.yaml (copy from minio-sc.yaml, use kafka-cluster as storage class name)
+- [x] kubectl create -f kafka-sc.yaml
+- [x] kubectl apply -f examples/kafka/kafka-persistent.yaml (check persistence, currently 5Gi)
 
-kubectl apply -f examples/kafka/kafka-persistent.yaml (check persistence, currently 5Gi)
+###### cd strimzi-0.5.0
+- [x] kubectl create -f mysql-sc.yaml
+- [x] kubectl --kubeconfig ../.kube/config  create -f mysql.yaml 
+- [x] kubectl --kubeconfig ../.kube/config  exec -it wordpress-mysql-55ffb8f7d5-k6ns8 bash \(create tables in inventory db, e.g. source /docker-entrypoint-initdb.d/inventory.sql )
+- [x] kubectl --kubeconfig ../.kube/config  create -f kafka-connect.yaml
 
-cd strimzi-0.5.0
-kubectl create -f mysql-sc.yaml
-kubectl --kubeconfig ../.kube/config  create -f mysql.yaml 
-kubectl --kubeconfig ../.kube/config  exec -it wordpress-mysql-55ffb8f7d5-k6ns8 bash (create tables in inventory db, e.g. source /docker-entrypoint-initdb.d/inventory.sql )
-
-kubectl --kubeconfig ../.kube/config  create -f kafka-connect.yaml
-vi register.json
+###### Register connector
+- [x] vi register.json
 > cat register.json | kubectl exec -i my-cluster-kafka-0 -- curl -s -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors -d @-
 > kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
 > kubectl --kubeconfig ../.kube/config exec  -i my-cluster-zookeeper-0 -- bin/kafka-topics.sh --zookeeper localhost:21810 --list
