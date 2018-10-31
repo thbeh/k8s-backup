@@ -4,19 +4,21 @@
 ###### grafana
 > kubectl --kubeconfig .kube/config port-forward $(kubectl --kubeconfig .kube/config get pods --selector=app=kube-prometheus-grafana -n  monitoring --output=jsonpath="{.items..metadata.name}") -n monitoring 3000
 
-kubectl create -f tiller-rbac-config.yaml
+###### Installing Helm
+- [x] kubectl create -f tiller-rbac-config.yaml
 
-- curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-- chmod 0700 get_helm.sh
-- ./get_helm.sh
+- [x] curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+- [x] chmod 0700 get_helm.sh
+- [x] ./get_helm.sh
 
-helm init --service-account tiller
+- [x] helm init --service-account tiller
 
-kubectl get pods -l name=tiller -n kube-system | grep ContainerCreating > /dev/null;
+- [x] kubectl get pods -l name=tiller -n kube-system | grep ContainerCreating > /dev/null;
 
-helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
-helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace monitoring
+###### Installing Prometheus Charts
+- [x] helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+- [x] helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
+- [x] helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace monitoring
 
 
 kubectl --kubeconfig .kube/config apply -f metallb.yaml
