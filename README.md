@@ -1,5 +1,5 @@
-###dashboard
-kubectl --kubeconfig .kube/config proxy --address='0.0.0.0' --accept-hosts='^*$'
+dashboard
+> kubectl --kubeconfig .kube/config proxy --address='0.0.0.0' --accept-hosts='^*$'
 
 grafana
 kubectl --kubeconfig .kube/config port-forward $(kubectl --kubeconfig .kube/config get pods --selector=app=kube-prometheus-grafana -n  monitoring --output=jsonpath="{.items..metadata.name}") -n monitoring 3000
@@ -26,7 +26,7 @@ cd deploy
 vi topology.json 
 ./gk-deploy -g  
 
-wget https://github.com/heketi/heketi/releases/download/v7.0.0/heketi-client-v7.0.0.linux.amd64.tar.gz
+wget https://github.com/heketi/heketi/reldashboardeases/download/v7.0.0/heketi-client-v7.0.0.linux.amd64.tar.gz
 tar zxvf heketi-client-v7.0.0.linux.amd64.tar.gz
 cp heketi-client/bin/heketi-cli /usr/local/bin/
 
