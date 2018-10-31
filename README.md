@@ -86,8 +86,8 @@ helm install --name spark-rss --namespace spark charts/spark-rss/
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 
 ###### Running Spark
-[x] sudo yum install java-1.8.0-openjdk-devel
-[x] export JAVA_HOME=/usr/lib/jvm/java
-[x] export HADOOP_HOME=/opt/vagrant/projects/hadoop-2.7.3
-[x] export PATH=$PATH:$HADOOP_HOME/bin
-[x] export SPARK_DIST_CLASSPATH=$(hadoop classpath)
+- [x] sudo yum install java-1.8.0-openjdk-devel
+- [x] export JAVA_HOME=/usr/lib/jvm/java
+- [x] export HADOOP_HOME=/opt/vagrant/projects/hadoop-2.7.3
+- [x] export PATH=$PATH:$HADOOP_HOME/bin
+- [x] export SPARK_DIST_CLASSPATH=$(hadoop classpath)
