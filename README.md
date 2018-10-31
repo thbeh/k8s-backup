@@ -71,17 +71,17 @@ kubectl --kubeconfig .kube/config exec -ti $MYSQLPOD -- mysql --user=debezium --
 > kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
 > kubectl exec -i my-cluster-kafka-0 -- /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic dbserver1.inventory.products --from-beginning --max-messages 4 | jq
 
- kubectl create -f k8s-spark-rbac.yaml
- create bucket - s3a:///thbeh (and upload a empty file to bucket)
- kubectl create -f spark-history-server.yaml
- kubectl create -f snappydata-sc.yaml
+###### Installing Snappydata cahrts
+- [x] kubectl create -f k8s-spark-rbac.yaml
+- [x] create bucket - s3a:///thbeh (and upload a empty file to bucket)
+- [x] kubectl create -f spark-history-server.yaml
+- [x] kubectl create -f snappydata-sc.yaml
+- [x] helm install --name snappydata --namespace snappy k8s-master-backup_24_09_2018/spark-on-k8s/charts/snappydata/
+- [x] kubectl create -f ../spark-sc.yaml
+- [x] helm install --name zeppelin --namespace spark charts/zeppelin-with-spark/
+- [x] helm install --name spark-rss --namespace spark charts/spark-rss/
 
-helm install --name snappydata --namespace snappy k8s-master-backup_24_09_2018/spark-on-k8s/charts/snappydata/
-kubectl create -f ../spark-sc.yaml
-helm install --name zeppelin --namespace spark charts/zeppelin-with-spark/
-helm install --name spark-rss --namespace spark charts/spark-rss/
-
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+~~kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default~~
 
 ###### Running Spark
 - [x] sudo yum install java-1.8.0-openjdk-devel
