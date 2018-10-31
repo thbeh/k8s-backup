@@ -1,5 +1,8 @@
-dashboard -	kubectl --kubeconfig .kube/config proxy --address='0.0.0.0' --accept-hosts='^*$'
-grafana -	kubectl --kubeconfig .kube/config port-forward $(kubectl --kubeconfig .kube/config get pods --selector=app=kube-prometheus-grafana -n  monitoring --output=jsonpath="{.items..metadata.name}") -n monitoring 3000
+###dashboard
+kubectl --kubeconfig .kube/config proxy --address='0.0.0.0' --accept-hosts='^*$'
+
+grafana
+kubectl --kubeconfig .kube/config port-forward $(kubectl --kubeconfig .kube/config get pods --selector=app=kube-prometheus-grafana -n  monitoring --output=jsonpath="{.items..metadata.name}") -n monitoring 3000
 
 kubectl create -f tiller-rbac-config.yaml
 
