@@ -6,14 +6,11 @@
 
 ###### Installing Helm
 - [x] kubectl create -f tiller-rbac-config.yaml
-
 - [x] curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
 - [x] chmod 0700 get_helm.sh
 - [x] ./get_helm.sh
-
 - [x] helm init --service-account tiller
-
-- [x] kubectl get pods -l name=tiller -n kube-system | grep ContainerCreating > /dev/null;
+- [ ] \(Optional) kubectl get pods -l name=tiller -n kube-system | grep ContainerCreating > /dev/null;
 
 ###### Installing Prometheus Charts
 - [x] helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
