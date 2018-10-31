@@ -73,8 +73,11 @@ kubectl --kubeconfig .kube/config exec -ti $MYSQLPOD -- mysql --user=debezium --
 
 
 kubectl create -f k8s-spark-rbac.yaml
+
 create bucket - s3a:///thbeh (and upload a empty file to bucket)
+
 kubectl create -f spark-history-server.yaml
+
 kubectl create -f snappydata-sc.yaml
 
 helm install --name snappydata --namespace snappy k8s-master-backup_24_09_2018/spark-on-k8s/charts/snappydata/
