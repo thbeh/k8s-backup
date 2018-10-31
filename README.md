@@ -6,17 +6,17 @@
 
 kubectl create -f tiller-rbac-config.yaml
 
-curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-chmod 0700 get_helm.sh
-./get_helm.sh
+- curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+- chmod 0700 get_helm.sh
+- ./get_helm.sh
 
 helm init --service-account tiller
 
 kubectl get pods -l name=tiller -n kube-system | grep ContainerCreating > /dev/null;
 
-helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
-helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
-helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace monitoring
+- helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/
+- helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring
+- helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace monitoring
 
 
 kubectl --kubeconfig .kube/config apply -f metallb.yaml
@@ -31,7 +31,7 @@ tar zxvf heketi-client-v7.0.0.linux.amd64.tar.gz
 cp heketi-client/bin/heketi-cli /usr/local/bin/
 
 export HEKETI_CLI_SERVER=http://10.244.3.7:8080 <- deploy-heketi sever
-export HEKETI_CLI_SERVER=$(kubectl get svc/deploy-heketi --template 'http://{{.spec.clusterIP}}:{{(index .spec.ports 0).port}}')
+> export HEKETI_CLI_SERVER=$(kubectl get svc/deploy-heketi --template 'http://{{.spec.clusterIP}}:{{(index .spec.ports 0).port}}')
 heketi-cli volume list
 heketi-cli topology info
 
@@ -62,15 +62,15 @@ kubectl --kubeconfig ../.kube/config  exec -it wordpress-mysql-55ffb8f7d5-k6ns8 
 
 kubectl --kubeconfig ../.kube/config  create -f kafka-connect.yaml
 vi register.json
-cat register.json | kubectl exec -i my-cluster-kafka-0 -- curl -s -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors -d @-
-kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
-kubectl --kubeconfig ../.kube/config exec  -i my-cluster-zookeeper-0 -- bin/kafka-topics.sh --zookeeper localhost:21810 --list
+> cat register.json | kubectl exec -i my-cluster-kafka-0 -- curl -s -X POST -H "Accept:application/json" -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors -d @-
+> kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
+> kubectl --kubeconfig ../.kube/config exec  -i my-cluster-zookeeper-0 -- bin/kafka-topics.sh --zookeeper localhost:21810 --list
 
 export MYSQLPOD=$(kubectl --kubeconfig .kube/config get pods -l app=wordpress --no-headers | awk '{print $1}')
 kubectl --kubeconfig .kube/config exec -ti $MYSQLPOD -- mysql --user=debezium --password=dbz
 
-kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
-kubectl exec -i my-cluster-kafka-0 -- /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic dbserver1.inventory.products --from-beginning --max-messages 4 | jq
+> kubectl exec -i my-cluster-kafka-0 -- curl -s -X GET -H "Content-Type:application/json" http://my-connect-cluster-connect-api:8083/connectors/inventory-connector/status | jq
+> kubectl exec -i my-cluster-kafka-0 -- /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic dbserver1.inventory.products --from-beginning --max-messages 4 | jq
 
 
 kubectl create -f k8s-spark-rbac.yaml
