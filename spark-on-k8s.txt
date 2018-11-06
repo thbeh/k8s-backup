@@ -1,0 +1,107 @@
+sudo yum install java-1.8.0-openjdk-devel
+export JAVA_HOME=/usr/lib/jvm/java
+export HADOOP_HOME=/opt/vagrant/projects/hadoop-2.7.3
+export PATH=$PATH:$HADOOP_HOME/bin
+export SPARK_DIST_CLASSPATH=$(hadoop classpath)
+
+
+bin/spark-submit \
+--deploy-mode cluster \
+--class org.apache.spark.examples.SparkPi \
+--master k8s://https://192.168.100.150:8443 \
+--conf spark.kubernetes.namespace=spark \
+--conf spark.executor.instances=5 \
+--conf spark.app.name=spark-pi \
+--conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 \
+--conf spark.hadoop.fs.s3a.endpoint=http://192.168.100.201:9000 \
+--conf spark.hadoop.fs.s3a.access.key=minio \
+--conf spark.hadoop.fs.s3a.secret.key=minio123 \
+--conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+--conf spark.hadoop.fs.s3a.path.style.access=true \
+--conf spark.eventLog.dir=s3a://mybucket/ \
+--jars "jars/hadoop-aws-2.7.3.jar,jars/aws-java-sdk-1.7.8.jar" \
+--conf spark.kubernetes.resourceStagingServer.uri=http://192.168.100.206:10000 \
+examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
+
+bin/spark-submit \
+--deploy-mode cluster \
+--class org.apache.spark.examples.SparkPi \
+--master k8s://https://192.168.205.150:8443 \
+--conf spark.kubernetes.namespace=spark \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.executor.instances=5 \
+--conf spark.app.name=spark-pi \
+--conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.resourceStagingServer.uri=http://192.168.205.207:10000 \
+--jars "jars/hadoop-aws-2.7.3.jar,jars/aws-java-sdk-1.7.4.jar" \
+--conf spark.eventLog.dir=s3a://thbeh/ \
+examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
+
+
+bin/spark-submit \
+--master k8s://http://localhost:8001 \
+--deploy-mode cluster \
+--name spark-pi \
+--class org.apache.spark.examples.SparkPi \
+--conf spark.executor.instances=5 \
+--conf spark.hadoop.fs.s3a.endpoint=http://192.168.205.201:9000 \
+--conf spark.hadoop.fs.s3a.access.key=minio \
+--conf spark.hadoop.fs.s3a.secret.key=minio123 \
+--conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+--conf spark.hadoop.fs.s3a.path.style.access=true \
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=s3a://thbeh/ \
+--conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.resourceStagingServer.uri=http://192.168.205.207:10000 \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar 1000
+
+/bin/spark-submit --deploy-mode cluster --class somePackage.someClass  --master spark://localhost:7077 --conf spark.snappydata.connection=192.168.100.202:1527 --packages "SnappyDataInc:snappydata:1.0.2-s_2.11"
+
+bin/spark-submit \
+--master k8s://http://localhost:8001 \
+--deploy-mode cluster \
+--name spark-pi \
+--conf spark.snappydata.connection=192.168.205.204:1527 \
+--packages "SnappyDataInc:snappydata:1.0.2-s_2.11" \
+--class development.maprlab.SmartConnectorExample \
+--conf spark.executor.instances=5 \
+--conf spark.hadoop.fs.s3a.endpoint=http://192.168.100.201:9000 \
+--conf spark.hadoop.fs.s3a.access.key=minio \
+--conf spark.hadoop.fs.s3a.secret.key=minio123 \
+--conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem \
+--conf spark.hadoop.fs.s3a.path.style.access=true \
+--conf spark.eventLog.enabled=true \
+--conf spark.eventLog.dir=s3a://thbeh/ \
+--conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 \
+--conf spark.kubernetes.resourceStagingServer.uri=http://192.168.100.207:10000 \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
+
+bin/spark-submit --master k8s://http://localhost:8001 --deploy-mode cluster --name spark-pi --class development.maprlab.JDBCExample --conf spark.executor.instances=5 --conf spark.hadoop.fs.s3a.endpoint=http://192.168.100.201:9000 --conf spark.hadoop.fs.s3a.access.key=minio --conf spark.hadoop.fs.s3a.secret.key=minio123 --conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem --conf spark.hadoop.fs.s3a.path.style.access=true --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=s3a://thbeh/ --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 --conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 --conf spark.kubernetes.resourceStagingServer.uri=http://192.168.100.206:10000 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark ../snappy-example.jar
+
+
+bin/spark-submit \
+  --deploy-mode cluster \
+  --class org.apache.spark.examples.SparkPi \
+  --master k8s://http://localhost:8001 \
+  --kubernetes-namespace default \
+  --conf spark.executor.instances=5 \
+  --conf spark.eventLog.enabled=true \
+  --conf spark.eventLog.dir=s3a://thbeh/ \
+  --conf spark.app.name=spark-pi \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+  --conf spark.kubernetes.driver.docker.image=kubespark/spark-driver:v2.2.0-kubernetes-0.5.0 \
+  --conf spark.kubernetes.executor.docker.image=kubespark/spark-executor:v2.2.0-kubernetes-0.5.0 \
+  local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
+
+
+./bin/spark-shell --master local[4] --jars "jars/hadoop-aws-2.7.6.jar,jars/httpclient-4.5.2.jar,jars/aws-java-sdk-core-1.11.234.jar,jars/aws-java-sdk-kms-1.11.234.jar,jars/aws-java-sdk-1.11.234.jar,jars/aws-java-sdk-s3-1
